@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premier League | Full Screen Fixtures</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f4f7f9;
+            --card-bg: #ffffff;
+            --pl-purple: #3d195b;
+            --pl-green: #00ff85;
+            --text-dark: #1f2937;
+            --border-color: #e5e7eb;
+            --row-hover: #f9f9fb;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-color); height: 100vh; display: flex; flex-direction: column; align-items: center; }
+
+        .main-container {
+            width: 98%; /* Ekranın neredeyse tamamı */
+            max-width: 1400px; /* Çok aşırı yayılmaması için üst sınır */
+            height: 96vh;
+            background: var(--card-bg);
+            margin: 2vh 0;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 40px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        /* Navigasyon Çubuğu */
+        .navbar { display: flex; gap: 12px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--bg-color); }
+        .nav-btn { text-decoration: none; color: var(--pl-purple); font-size: 0.9rem; font-weight: 700; padding: 10px 20px; border-radius: 8px; background: #f0f0f5; transition: 0.2s; }
+        .nav-btn:hover { background: var(--pl-purple); color: white; }
+        .nav-btn.active { background: var(--pl-purple); color: var(--pl-green); }
+
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .header h1 { color: var(--pl-purple); font-weight: 800; font-size: 2rem; letter-spacing: -1px; }
+        .week-title { font-size: 1.2rem; font-weight: 700; color: #fff; background: var(--pl-purple); padding: 8px 25px; border-radius: 30px; box-shadow: 0 4px 10px rgba(61, 25, 91, 0.2); }
+
+        /* Fikstür Izgarası - İki Sütunlu (Geniş Ekran) */
+        .fixture-grid {
+            flex: 1;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Maçları yan yana iki sütun yapar */
+            gap: 20px;
+            padding: 10px;
+        }
+        .fixture-grid::-webkit-scrollbar { width: 8px; }
+        .fixture-grid::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+
+        .match-card {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px 30px;
+            display: grid;
+            grid-template-columns: 1.5fr 60px 1.5fr; /* VS alanı sabit, takımlar esnek */
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        .match-card:hover { 
+            transform: translateY(-3px);
+            border-color: var(--pl-purple);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            background: var(--row-hover);
+        }
+
+        .team-box { display: flex; align-items: center; gap: 15px; overflow: hidden; }
+        .team-box.home { justify-content: flex-end; text-align: right; }
+        .team-box.away { justify-content: flex-start; text-align: left; }
+        
+        .team-name { font-weight: 700; font-size: 1.1rem; color: var(--pl-purple); white-space: nowrap; }
+        .team-logo { width: 40px; height: 40px; flex-shrink: 0; object-fit: contain; }
+
+        .vs { 
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            font-weight: 800; font-size: 0.8rem; color: #999;
+            height: 35px; width: 55px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 6px; margin: 0 auto;
+        }
+
+        /* Hafta Seçici - Alt Kısım */
+        .week-selector {
+            display: flex; gap: 10px; overflow-x: auto;
+            padding: 20px 0; border-top: 2px solid var(--bg-color);
+            margin-top: 15px;
+        }
+        .week-btn {
+            min-width: 45px; height: 45px; border-radius: 10px;
+            border: 2px solid var(--pl-purple); background: white;
+            color: var(--pl-purple); font-weight: 700; cursor: pointer;
+            transition: 0.2s;
+        }
+        .week-btn:hover, .week-btn.active { background: var(--pl-purple); color: var(--pl-green); transform: scale(1.1); }
+
+        /* Mobil Ayarı */
+        @media (max-width: 1000px) {
+            .fixture-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <nav class="navbar">
+            <a href="index.html" class="nav-btn">Ana Sayfa</a>
+            <a href="puan_durumu.html" class="nav-btn">Puan Durumu</a>
+            <a href="gol_kralligi.html" class="nav-btn">Gol Krallığı</a>
+            <a href="asist_kralligi.html" class="nav-btn">Asist Krallığı</a>
+            <a href="gol_yenmeyen_mac.html" class="nav-btn">Gol Yenmeyen Maç</a>
+            <a href="fikstur.html" class="nav-btn active">Fikstür</a>
+        </nav>
+
+        <div class="header">
+            <h1>Premier Lig Fikstür</h1>
+            <div id="selectedWeekTitle" class="week-title">1. Hafta</div>
+        </div>
+
+        <div class="fixture-grid" id="fixtureGrid"></div>
+
+        <div class="week-selector" id="weekSelector"></div>
+    </div>
+
+    <script>
+        const TEAM_LOGOS = {
+            "Manchester City": "https://resources.premierleague.com/premierleague/badges/t43.svg",
+            "Arsenal": "https://resources.premierleague.com/premierleague/badges/t3.svg",
+            "Liverpool": "https://resources.premierleague.com/premierleague/badges/t14.svg",
+            "Aston Villa": "https://resources.premierleague.com/premierleague/badges/t7.svg",
+            "Tottenham": "https://resources.premierleague.com/premierleague/badges/t6.svg",
+            "Chelsea": "https://resources.premierleague.com/premierleague/badges/t8.svg",
+            "Newcastle United": "https://resources.premierleague.com/premierleague/badges/t4.svg",
+            "Manchester United": "https://resources.premierleague.com/premierleague/badges/t1.svg",
+            "West Ham United": "https://resources.premierleague.com/premierleague/badges/t21.svg",
+            "Brighton": "https://resources.premierleague.com/premierleague/badges/t36.svg",
+            "Everton": "https://resources.premierleague.com/premierleague/badges/t11.svg",
+            "Nottingham Forest": "https://resources.premierleague.com/premierleague/badges/t17.svg"
+        };
+
+        const FIXTURE_DATA = {
+            1: [{home:"Manchester City",away:"Tottenham"},{home:"West Ham United",away:"Nottingham Forest"},{home:"Newcastle United",away:"Manchester United"},{home:"Arsenal",away:"Everton"},{home:"Chelsea",away:"Aston Villa"},{home:"Brighton",away:"Liverpool"}],
+            2: [{home:"Nottingham Forest",away:"Manchester City"},{home:"Manchester United",away:"Tottenham"},{home:"Everton",away:"West Ham United"},{home:"Aston Villa",away:"Newcastle United"},{home:"Liverpool",away:"Arsenal"},{home:"Brighton",away:"Chelsea"}],
+            3: [{home:"Manchester City",away:"Manchester United"},{home:"Nottingham Forest",away:"Everton"},{home:"Tottenham",away:"Aston Villa"},{home:"West Ham United",away:"Liverpool"},{home:"Newcastle United",away:"Brighton"},{home:"Arsenal",away:"Chelsea"}],
+            4: [{home:"Everton",away:"Manchester City"},{home:"Aston Villa",away:"Manchester United"},{home:"Liverpool",away:"Nottingham Forest"},{home:"Brighton",away:"Tottenham"},{home:"Chelsea",away:"West Ham United"},{home:"Arsenal",away:"Newcastle United"}],
+            5: [{home:"Manchester City",away:"Aston Villa"},{home:"Everton",away:"Liverpool"},{home:"Manchester United",away:"Brighton"},{home:"Nottingham Forest",away:"Chelsea"},{home:"Tottenham",away:"Arsenal"},{home:"West Ham United",away:"Newcastle United"}],
+            6: [{home:"Liverpool",away:"Manchester City"},{home:"Brighton",away:"Aston Villa"},{home:"Chelsea",away:"Everton"},{home:"Arsenal",away:"Manchester United"},{home:"Newcastle United",away:"Nottingham Forest"},{home:"West Ham United",away:"Tottenham"}],
+            7: [{home:"Manchester City",away:"Brighton"},{home:"Liverpool",away:"Chelsea"},{home:"Aston Villa",away:"Arsenal"},{home:"Everton",away:"Newcastle United"},{home:"Manchester United",away:"West Ham United"},{home:"Nottingham Forest",away:"Tottenham"}],
+            8: [{home:"Chelsea",away:"Manchester City"},{home:"Arsenal",away:"Brighton"},{home:"Newcastle United",away:"Liverpool"},{home:"West Ham United",away:"Aston Villa"},{home:"Tottenham",away:"Everton"},{home:"Nottingham Forest",away:"Manchester United"}],
+            9: [{home:"Manchester City",away:"Arsenal"},{home:"Chelsea",away:"Newcastle United"},{home:"Brighton",away:"West Ham United"},{home:"Liverpool",away:"Tottenham"},{home:"Aston Villa",away:"Nottingham Forest"},{home:"Everton",away:"Manchester United"}],
+            10: [{home:"Newcastle United",away:"Manchester City"},{home:"West Ham United",away:"Arsenal"},{home:"Tottenham",away:"Chelsea"},{home:"Nottingham Forest",away:"Brighton"},{home:"Manchester United",away:"Liverpool"},{home:"Everton",away:"Aston Villa"}],
+            11: [{home:"Manchester City",away:"West Ham United"},{home:"Newcastle United",away:"Tottenham"},{home:"Arsenal",away:"Nottingham Forest"},{home:"Chelsea",away:"Manchester United"},{home:"Brighton",away:"Everton"},{home:"Liverpool",away:"Aston Villa"}],
+            12: [{home:"Tottenham",away:"Manchester City"},{home:"Nottingham Forest",away:"West Ham United"},{home:"Manchester United",away:"Newcastle United"},{home:"Everton",away:"Arsenal"},{home:"Aston Villa",away:"Chelsea"},{home:"Liverpool",away:"Brighton"}],
+            13: [{home:"Manchester City",away:"Nottingham Forest"},{home:"Tottenham",away:"Manchester United"},{home:"West Ham United",away:"Everton"},{home:"Newcastle United",away:"Aston Villa"},{home:"Arsenal",away:"Liverpool"},{home:"Chelsea",away:"Brighton"}],
+            14: [{home:"Manchester United",away:"Manchester City"},{home:"Everton",away:"Nottingham Forest"},{home:"Aston Villa",away:"Tottenham"},{home:"Liverpool",away:"West Ham United"},{home:"Brighton",away:"Newcastle United"},{home:"Chelsea",away:"Arsenal"}],
+            15: [{home:"Manchester City",away:"Everton"},{home:"Manchester United",away:"Aston Villa"},{home:"Nottingham Forest",away:"Liverpool"},{home:"Tottenham",away:"Brighton"},{home:"West Ham United",away:"Chelsea"},{home:"Newcastle United",away:"Arsenal"}],
+            16: [{home:"Aston Villa",away:"Manchester City"},{home:"Liverpool",away:"Everton"},{home:"Brighton",away:"Manchester United"},{home:"Chelsea",away:"Nottingham Forest"},{home:"Arsenal",away:"Tottenham"},{home:"Newcastle United",away:"West Ham United"}],
+            17: [{home:"Manchester City",away:"Liverpool"},{home:"Aston Villa",away:"Brighton"},{home:"Everton",away:"Chelsea"},{home:"Manchester United",away:"Arsenal"},{home:"Nottingham Forest",away:"Newcastle United"},{home:"Tottenham",away:"West Ham United"}],
+            18: [{home:"Brighton",away:"Manchester City"},{home:"Chelsea",away:"Liverpool"},{home:"Arsenal",away:"Aston Villa"},{home:"Newcastle United",away:"Everton"},{home:"West Ham United",away:"Manchester United"},{home:"Tottenham",away:"Nottingham Forest"}],
+            19: [{home:"Manchester City",away:"Chelsea"},{home:"Brighton",away:"Arsenal"},{home:"Liverpool",away:"Newcastle United"},{home:"Aston Villa",away:"West Ham United"},{home:"Everton",away:"Tottenham"},{home:"Manchester United",away:"Nottingham Forest"}],
+            20: [{home:"Arsenal",away:"Manchester City"},{home:"Newcastle United",away:"Chelsea"},{home:"West Ham United",away:"Brighton"},{home:"Tottenham",away:"Liverpool"},{home:"Nottingham Forest",away:"Aston Villa"},{home:"Manchester United",away:"Everton"}],
+            21: [{home:"Manchester City",away:"Newcastle United"},{home:"Arsenal",away:"West Ham United"},{home:"Chelsea",away:"Tottenham"},{home:"Brighton",away:"Nottingham Forest"},{home:"Liverpool",away:"Manchester United"},{home:"Aston Villa",away:"Everton"}],
+            22: [{home:"West Ham United",away:"Manchester City"},{home:"Tottenham",away:"Newcastle United"},{home:"Nottingham Forest",away:"Arsenal"},{home:"Manchester United",away:"Chelsea"},{home:"Everton",away:"Brighton"},{home:"Aston Villa",away:"Liverpool"}]
+        };
+
+        function getLogo(teamName) {
+            return TEAM_LOGOS[teamName] || "https://resources.premierleague.com/premierleague/badges/tdefault.svg";
+        }
+
+        function loadWeek(week) {
+            const grid = document.getElementById('fixtureGrid');
+            const title = document.getElementById('selectedWeekTitle');
+            grid.innerHTML = '';
+            title.innerText = `${week}. Hafta`;
+
+            document.querySelectorAll('.week-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.getElementById(`btn-week-${week}`);
+            if(activeBtn) activeBtn.classList.add('active');
+
+            const matches = FIXTURE_DATA[week] || [];
+
+            matches.forEach(match => {
+                const card = document.createElement('div');
+                card.className = 'match-card';
+                card.innerHTML = `
+                    <div class="team-box home">
+                        <span class="team-name">${match.home}</span>
+                        <img class="team-logo" src="${getLogo(match.home)}" alt="${match.home}">
+                    </div>
+                    <div class="vs">VS</div>
+                    <div class="team-box away">
+                        <img class="team-logo" src="${getLogo(match.away)}" alt="${match.away}">
+                        <span class="team-name">${match.away}</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function createButtons() {
+            const container = document.getElementById('weekSelector');
+            for (let i = 1; i <= 22; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'week-btn';
+                btn.id = `btn-week-${i}`;
+                btn.innerText = i;
+                btn.onclick = () => loadWeek(i);
+                container.appendChild(btn);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            createButtons();
+            loadWeek(1);
+        });
+    </script>
+</body>
+</html>
