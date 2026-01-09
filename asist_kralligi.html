@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premier League | Assist Leaders</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f4f7f9;
+            --card-bg: #ffffff;
+            --text-dark: #1f2937;
+            --text-muted: #6b7280;
+            --pl-purple: #3d195b;
+            --pl-green: #00ff85;
+            --border-color: #e5e7eb;
+            --row-hover: #f9fafb;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .main-container {
+            width: 95%;
+            max-width: 1200px;
+            height: 92vh;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            padding: 25px 40px;
+            border: 1px solid var(--border-color);
+        }
+
+        .navbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            text-decoration: none;
+            color: var(--pl-purple);
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 10px 20px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover { background: var(--pl-purple); color: white; transform: translateY(-2px); }
+        .nav-btn.active { background: var(--pl-purple); color: var(--pl-green); border-color: var(--pl-purple); }
+
+        .header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 15px; }
+        .header-title h1 { font-size: 1.8rem; font-weight: 800; color: var(--pl-purple); letter-spacing: -0.5px; }
+        .header-title p { color: var(--text-muted); font-size: 0.9rem; font-weight: 500; }
+
+        .table-wrapper { flex: 1; overflow-y: auto; margin-top: 10px; }
+        .table-wrapper::-webkit-scrollbar { width: 6px; }
+        .table-wrapper::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th { position: sticky; top: 0; background: white; text-align: center; padding: 15px 10px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); border-bottom: 2px solid var(--bg-color); z-index: 10; }
+        td { padding: 15px 10px; text-align: center; font-size: 0.95rem; border-bottom: 1px solid var(--bg-color); transition: background 0.2s; }
+        tr:hover td { background-color: var(--row-hover); }
+
+        .rank-col { width: 80px; font-weight: 700; color: var(--pl-purple); }
+        .player-col { width: 40%; text-align: left; font-weight: 700; padding-left: 20px; color: var(--pl-purple); }
+        .team-col { width: 30%; text-align: left; font-weight: 500; color: var(--text-muted); }
+        .stat-col { font-weight: 800; color: #000; background-color: rgba(0, 255, 133, 0.1); font-size: 1.1rem; }
+
+        .footer { padding-top: 20px; border-top: 1px solid var(--border-color); margin-top: 10px; }
+        .date-info { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <nav class="navbar">
+            <a href="index.html" class="nav-btn">Ana Sayfa</a>
+            <a href="puan_durumu.html" class="nav-btn">Puan Durumu</a>
+            <a href="gol_kralligi.html" class="nav-btn">Gol Krallığı</a>
+            <a href="asist_kralligi.html" class="nav-btn active">Asist Krallığı</a>
+            <a href="gol_yenmeyen_mac.html" class="nav-btn">Gol Yenmeyen Maç</a>
+        </nav>
+
+        <div class="header">
+            <div class="header-title">
+                <h1>Premier League</h1>
+                <p>Asist Krallığı - Sezon 2025/26</p>
+            </div>
+            <div class="date-info" id="currentDate"></div>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="assistsTable">
+                <thead>
+                    <tr>
+                        <th class="rank-col">Sıra</th>
+                        <th class="player-col">Oyuncu</th>
+                        <th class="team-col">Takım</th>
+                        <th class="stat-col">Asist Sayısı</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            <div class="date-info">Eşitlik durumunda toplam süreye bakılır.</div>
+        </div>
+    </div>
+
+    <script>
+        const ASSISTS_KEY = 'topAssistsData';
+
+        function loadAssists() {
+            const assistData = JSON.parse(localStorage.getItem(ASSISTS_KEY)) || [];
+            assistData.sort((a, b) => b.assists - a.assists);
+
+            const tbody = document.querySelector('#assistsTable tbody');
+            tbody.innerHTML = '';
+
+            if (assistData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="padding: 40px; color: var(--text-muted);">Henüz asist verisi girilmedi.</td></tr>';
+            } else {
+                assistData.forEach((player, index) => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td class="rank-col">${index + 1}</td>
+                        <td class="player-col">${player.name}</td>
+                        <td class="team-col">${player.team}</td>
+                        <td class="stat-col">${player.assists}</td>
+                    `;
+                });
+            }
+
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('tr-TR', { 
+                day:'2-digit', month:'long', year:'numeric'
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadAssists);
+    </script>
+</body>
+</html>

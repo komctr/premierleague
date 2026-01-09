@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premier League | Standings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f4f7f9;
+            --card-bg: #ffffff;
+            --text-dark: #1f2937;
+            --text-muted: #6b7280;
+            --pl-purple: #3d195b; /* Premier Lig Resmi Moru */
+            --pl-green: #00ff85;
+            --border-color: #e5e7eb;
+            --row-hover: #f9fafb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .main-container {
+            width: 95%;
+            max-width: 1200px;
+            height: 92vh; /* Menü için biraz alan açıldı */
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            padding: 25px 40px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* --- Navigasyon Menüsü --- */
+        .navbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            text-decoration: none;
+            color: var(--pl-purple);
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 10px 20px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-btn:hover {
+            background: var(--pl-purple);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .nav-btn.active {
+            background: var(--pl-purple);
+            color: var(--pl-green);
+            border-color: var(--pl-purple);
+        }
+
+        /* Başlık Alanı */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-bottom: 15px;
+        }
+
+        .header-title h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--pl-purple);
+            letter-spacing: -0.5px;
+        }
+
+        .header-title p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Tablo Alanı */
+        .table-wrapper {
+            flex: 1;
+            overflow-y: auto; /* Tablo çok uzun olursa içeride kaydırılabilir */
+            margin-top: 10px;
+        }
+
+        /* Scrollbar Tasarımı (Webkit) */
+        .table-wrapper::-webkit-scrollbar { width: 6px; }
+        .table-wrapper::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        th {
+            position: sticky;
+            top: 0;
+            background: white;
+            text-align: center;
+            padding: 15px 10px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            border-bottom: 2px solid var(--bg-color);
+            z-index: 10;
+        }
+
+        td {
+            padding: 12px 10px;
+            text-align: center;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--bg-color);
+            transition: background 0.2s;
+        }
+
+        tr:hover td {
+            background-color: var(--row-hover);
+        }
+
+        .rank-col { width: 60px; font-weight: 700; color: var(--pl-purple); }
+        .team-col { width: 25%; text-align: left; font-weight: 600; padding-left: 20px; }
+        .pts-col { font-weight: 700; color: #000; background-color: rgba(0, 255, 133, 0.1); }
+
+        /* Pozisyon Şeridi */
+        .facup { border-left: 4px solid #4285f4; }
+
+        /* Alt Alan */
+        .footer {
+            padding-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            margin-top: 10px;
+        }
+
+        .date-info {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <nav class="navbar">
+            <a href="index.html" class="nav-btn">Ana Sayfa</a>
+            <a href="puan_durumu.html" class="nav-btn active">Puan Durumu</a>
+            <a href="gol_kralligi.html" class="nav-btn">Gol Krallığı</a>
+            <a href="asist_kralligi.html" class="nav-btn">Asist Krallığı</a>
+            <a href="gol_yenmeyen_mac.html" class="nav-btn">Gol Yenmeyen Maç</a>
+        </nav>
+
+        <div class="header">
+            <div class="header-title">
+                <h1>Premier League</h1>
+                <p>Resmi Puan Durumu</p>
+            </div>
+            <div class="date-info" id="currentDate"></div>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="standingsTable">
+                <thead>
+                    <tr>
+                        <th class="rank-col">Sıra</th>
+                        <th class="team-col">Takım</th>
+                        <th>O</th> <th>G</th> <th>B</th> <th>M</th> <th>AG</th> <th>YG</th> <th>AV</th> <th class="pts-col">PTS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            <div style="display: flex; gap: 15px; font-size: 0.75rem; color: var(--text-muted);">
+                <span><strong style="color: #4285f4; margin-right: 5px;">■</strong> FA Cup</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'leagueStandingsData';
+        const INITIAL_TEAMS_DATA = [
+            { name: 'Tottenham Hotspur', O: 0, G: 0, B: 0, M: 0, AG: 0, YG: 0, AV: 0, Puan: 0 },
+            { name: 'Arsenal', O: 0, G: 0, B: 0, M: 0, AG: 0, YG: 0, AV: 0, Puan: 0 },
+            { name: 'Everton', O: 0, G: 0, B: 0, M: 0, AG: 0, YG: 0, AV: 0, Puan: 0 },
+            { name: 'Manchester City', O: 0, G: 0, B: 0, M: 0, AG: 0, YG: 0, AV: 0, Puan: 0 },
+            { name: 'Manchester United', O: 0, G: 0, B: 0, M: 0, AG: 0, YG: 0, AV: 0, Puan: 0 },
+            { name: 'Liverpool', O: 0, G: 0, B: 0, M: 0, AG: 0, YG: 0, AV: 0, Puan: 0 },
+            { name: 'Newcastle United', O: 0, G: 0, B: 0, M: 0, AG: 0, YG: 0, AV: 0, Puan: 0 },
+            { name: 'Chelsea', O: 0, G: 0, B: 0, M: 0, AG: 0, YG: 0, AV: 0, Puan: 0 },
+            { name: 'Aston Villa', O: 0, G: 0, B: 0, M: 0, AG: 0, YG: 0, AV: 0, Puan: 0 },
+            { name: 'Brighton', O: 0, G: 0, B: 0, M: 0, AG: 0, YG: 0, AV: 0, Puan: 0 },
+            { name: 'West Ham United', O: 0, G: 0, B: 0, M: 0, AG: 0, YG: 0, AV: 0, Puan: 0 },
+            { name: 'Nottingham Forest', O: 0, G: 0, B: 0, M: 0, AG: 0, YG: 0, AV: 0, Puan: 0 }
+        ];
+
+        let teamsData = [];
+
+        function loadData() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            teamsData = stored ? JSON.parse(stored) : JSON.parse(JSON.stringify(INITIAL_TEAMS_DATA));
+        }
+
+        function renderTable() {
+            teamsData.sort((a, b) => b.Puan - a.Puan || b.AV - a.AV);
+            const tbody = document.querySelector('#standingsTable tbody');
+            tbody.innerHTML = '';
+
+            teamsData.forEach((team, index) => {
+                const row = tbody.insertRow();
+                if(index < 4) row.classList.add('facup');
+
+                row.innerHTML = `
+                    <td class="rank-col">${index + 1}</td>
+                    <td class="team-col">${team.name}</td>
+                    <td>${team.O}</td>
+                    <td>${team.G}</td>
+                    <td>${team.B}</td>
+                    <td>${team.M}</td>
+                    <td>${team.AG}</td>
+                    <td>${team.YG}</td>
+                    <td>${team.AV}</td>
+                    <td class="pts-col">${team.Puan}</td>
+                `;
+            });
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('tr-TR', { day:'2-digit', month:'long', year:'numeric'});
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(teamsData));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            renderTable();
+        });
+    </script>
+</body>
+</html>
