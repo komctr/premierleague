@@ -2,95 +2,25 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premier League | Golden Glove</title>
+    <title>Premier League | Gol Yenmeyen Maç</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: #f4f7f9;
-            --card-bg: #ffffff;
-            --text-dark: #1f2937;
-            --text-muted: #6b7280;
-            --pl-purple: #3d195b;
-            --pl-green: #00ff85;
-            --border-color: #e5e7eb;
-            --row-hover: #f9fafb;
-        }
-
+        :root { --bg-color: #f4f7f9; --card-bg: #ffffff; --text-dark: #1f2937; --text-muted: #6b7280; --pl-purple: #3d195b; --pl-green: #00ff85; --border-color: #e5e7eb; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-dark);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
-
-        .main-container {
-            width: 95%;
-            max-width: 1200px;
-            height: 92vh;
-            background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            padding: 25px 40px;
-            border: 1px solid var(--border-color);
-        }
-
-        .navbar {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
-            flex-wrap: wrap;
-        }
-
-        .nav-btn {
-            text-decoration: none;
-            color: var(--pl-purple);
-            font-size: 0.85rem;
-            font-weight: 700;
-            padding: 10px 20px;
-            border-radius: 8px;
-            background: #f8f9fa;
-            border: 1px solid var(--border-color);
-            transition: all 0.3s ease;
-        }
-
-        .nav-btn:hover { background: var(--pl-purple); color: white; transform: translateY(-2px); }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .main-container { width: 95%; max-width: 1200px; height: 98vh; background: var(--card-bg); border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); display: flex; flex-direction: column; padding: 25px 40px; border: 1px solid var(--border-color); }
+        .navbar { display: flex; gap: 10px; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; }
+        .nav-btn { text-decoration: none; color: var(--pl-purple); font-size: 0.85rem; font-weight: 700; padding: 10px 20px; border-radius: 8px; background: #f8f9fa; border: 1px solid var(--border-color); transition: all 0.3s ease; }
         .nav-btn.active { background: var(--pl-purple); color: var(--pl-green); border-color: var(--pl-purple); }
-
-        .header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 15px; }
-        .header-title h1 { font-size: 1.8rem; font-weight: 800; color: var(--pl-purple); letter-spacing: -0.5px; }
-        .header-title p { color: var(--text-muted); font-size: 0.9rem; font-weight: 500; }
-
-        .table-wrapper { flex: 1; overflow-y: auto; margin-top: 10px; }
-        .table-wrapper::-webkit-scrollbar { width: 6px; }
-        .table-wrapper::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
-
-        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th { position: sticky; top: 0; background: white; text-align: center; padding: 15px 10px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); border-bottom: 2px solid var(--bg-color); z-index: 10; }
-        td { padding: 15px 10px; text-align: center; font-size: 0.95rem; border-bottom: 1px solid var(--bg-color); transition: background 0.2s; }
-        tr:hover td { background-color: var(--row-hover); }
-
-        .rank-col { width: 80px; font-weight: 700; color: var(--pl-purple); }
-        .player-col { width: 40%; text-align: left; font-weight: 700; padding-left: 20px; color: var(--pl-purple); }
-        .team-col { width: 30%; text-align: left; font-weight: 500; color: var(--text-muted); }
-        .stat-col { font-weight: 800; color: #000; background-color: rgba(0, 255, 133, 0.1); font-size: 1.1rem; }
-
-        .footer { padding-top: 20px; border-top: 1px solid var(--border-color); margin-top: 10px; }
-        .date-info { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+        .header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); margin-bottom: 10px; }
+        .table-wrapper { flex: 1; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 15px; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid var(--bg-color); }
+        td { padding: 12px 15px; border-bottom: 1px solid var(--bg-color); }
+        .stat-col { font-weight: 800; text-align: center; background: rgba(0, 255, 133, 0.1); width: 80px; }
     </style>
 </head>
 <body>
-
     <div class="main-container">
         <nav class="navbar">
             <a href="index.html" class="nav-btn">Ana Sayfa</a>
@@ -100,65 +30,39 @@
             <a href="gol_yenmeyen_mac.html" class="nav-btn active">Gol Yenmeyen Maç</a>
             <a href="fikstur.html" class="nav-btn">Fikstür</a>
         </nav>
-
         <div class="header">
-            <div class="header-title">
-                <h1>Premier League</h1>
-                <p>Gol Yenmeyen Maç - Sezon 2025/26</p>
-            </div>
-            <div class="date-info" id="currentDate"></div>
+            <div><h1 style="color:var(--pl-purple); font-weight:800;">Gol Yenmeyen Maç</h1><p>Sezon 2025/26</p></div>
+            <div id="currentDate" style="font-size: 0.85rem; color: var(--text-muted);"></div>
         </div>
-
-        <div class="table-wrapper">
+        <div style="flex:1; overflow-y:auto;">
             <table id="csTable">
-                <thead>
-                    <tr>
-                        <th class="rank-col">Sıra</th>
-                        <th class="player-col">Kaleci</th>
-                        <th class="team-col">Takım</th>
-                        <th class="stat-col">Gol Yenmeyen Maç</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    </tbody>
+                <thead><tr><th>Sıra</th><th>Oyuncu</th><th>Takım</th><th style="text-align:center">Gol Yenmeyen Maç</th></tr></thead>
+                <tbody></tbody>
             </table>
-        </div>
-
-        <div class="footer">
-            <div class="date-info">Eşitlik durumunda en çok maça çıkan kaleci üstte yer alır.</div>
         </div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script>
-        const CS_KEY = 'cleanSheetsData';
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeDf5CxbElVbkl8wGXSAZ9DBxOWxOorxc",
+            databaseURL: "https://premierligrp-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "premierligrp",
+            appId: "1:762350145530:web:657b94791a29bc0ddd1e43"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-        function renderCS() {
-            const csData = JSON.parse(localStorage.getItem(CS_KEY)) || [];
-            csData.sort((a, b) => b.count - a.count);
-
+        db.ref('cleanSheetsData').on('value', snapshot => {
+            const data = snapshot.val() || [];
+            data.sort((a, b) => b.count - a.count);
             const tbody = document.querySelector('#csTable tbody');
-            tbody.innerHTML = '';
-
-            if (csData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="padding: 40px; color: var(--text-muted);">Veri bulunamadı.</td></tr>';
-            } else {
-                csData.forEach((gk, index) => {
-                    const row = tbody.insertRow();
-                    row.innerHTML = `
-                        <td class="rank-col">${index + 1}</td>
-                        <td class="player-col">${gk.name}</td>
-                        <td class="team-col">${gk.team}</td>
-                        <td class="stat-col">${gk.count}</td>
-                    `;
-                });
-            }
-
-            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('tr-TR', { 
-                day:'2-digit', month:'long', year:'numeric'
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', renderCS);
+            tbody.innerHTML = data.map((p, i) => `
+                <tr><td style="font-weight:700; color:var(--pl-purple)">${i+1}</td><td>${p.name}</td><td>${p.team}</td><td class="stat-col">${p.count}</td></tr>
+            `).join('');
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('tr-TR');
+        });
     </script>
 </body>
 </html>

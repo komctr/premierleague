@@ -2,85 +2,92 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>➕ Clean Sheet Girişi</title>
+    <title>🧤 Clean Sheet Girişi | Akıllı Liste</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --pl-purple: #3d195b; --pl-green: #00ff85; }
-        body { font-family: 'Inter', sans-serif; background: #e9ecef; display: flex; justify-content: center; padding: 50px; }
-        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); width: 100%; max-width: 400px; }
+        body { font-family: 'Inter', sans-serif; background: #f4f7f9; display: flex; justify-content: center; padding: 50px; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
         h2 { color: var(--pl-purple); text-align: center; border-bottom: 3px solid var(--pl-purple); padding-bottom: 10px; margin-bottom: 20px; }
         .form-group { display: flex; flex-direction: column; gap: 15px; }
-        label { font-weight: 600; font-size: 0.9rem; color: var(--pl-purple); }
-        input, select { padding: 12px; border: 1px solid #ced4da; border-radius: 8px; font-size: 16px; }
+        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; width: 100%; box-sizing: border-box; }
         button { background: var(--pl-green); color: var(--pl-purple); border: none; padding: 15px; border-radius: 8px; font-weight: 800; cursor: pointer; transition: 0.3s; }
-        button:hover { transform: translateY(-2px); filter: brightness(1.1); }
-        .btn-reset { background: #f8d7da; color: #721c24; margin-top: 10px; font-size: 0.8rem; }
         .back-link { display: block; text-align: center; margin-top: 20px; color: var(--pl-purple); text-decoration: none; font-weight: 600; }
+        .hint { font-size: 0.8rem; color: #666; margin-bottom: -10px; margin-left: 5px; }
     </style>
 </head>
 <body>
-
 <div class="container">
     <h2>🧤 Clean Sheet Girişi</h2>
     <div class="form-group">
-        <label>Kaleci Adı:</label>
-        <input type="text" id="gkName" placeholder="Örn: David Raya">
-        
-        <label>Takımı:</label>
+        <p class="hint">Kaleci Ara veya Yeni Yaz:</p>
+        <input list="dynamicKeepers" id="gkInput" placeholder="Kaleci ismi yaz..." oninput="autoTeam(this.value)">
+        <datalist id="dynamicKeepers"></datalist>
+
+        <p class="hint">Takım:</p>
         <select id="gkTeam">
-            <option value="Manchester City">Manchester City</option>
-            <option value="Arsenal">Arsenal</option>
-            <option value="Liverpool">Liverpool</option>
-            <option value="Tottenham Hotspur">Tottenham Hotspur</option>
-            <option value="Manchester United">Manchester United</option>
-            <option value="Chelsea">Chelsea</option>
-            <option value="Aston Villa">Aston Villa</option>
-            <option value="Newcastle United">Newcastle United</option>
-            <option value="Brighton">Brighton</option>
-            <option value="West Ham United">West Ham United</option>
-            <option value="Nottingham Forest">Nottingham Forest</option>
-            <option value="Everton">Everton</option>
+            <option value="">Takım Seçin</option>
+            <option>Arsenal</option><option>Manchester City</option><option>Liverpool</option>
+            <option>Tottenham Hotspur</option><option>Manchester United</option><option>Newcastle United</option>
+            <option>Nottingham Forest</option><option>Everton</option><option>Chelsea</option>
+            <option>Aston Villa</option><option>Brighton</option><option>West Ham United</option>
         </select>
 
-        <label>Gol Yenmeyen Maç Sayısı:</label>
+        <p class="hint">Clean Sheet Sayısı:</p>
         <input type="number" id="csCount" min="1" value="1">
-        
-        <button onclick="addCS()">Veriyi Kaydet</button>
-        <button class="btn-reset" onclick="resetCS()">Tüm Verileri Sıfırla</button>
+        <button onclick="saveCS()">Kaydet ve Listeye Ekle</button>
     </div>
     <a href="index.html" class="back-link">Ana Sayfaya Dön</a>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 <script>
-    const CS_KEY = 'cleanSheetsData';
+    const firebaseConfig = {
+        apiKey: "AIzaSyBeDf5CxbElVbkl8wGXSAZ9DBxOWxOorxc",
+        databaseURL: "https://premierligrp-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "premierligrp",
+        appId: "1:762350145530:web:657b94791a29bc0ddd1e43"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    function addCS() {
-        const name = document.getElementById('gkName').value.trim();
+    // Kaleci listesini Firebase'den çekip datalist'e basar
+    db.ref('cleanSheetsData').on('value', snapshot => {
+        const data = snapshot.val() || [];
+        const datalist = document.getElementById('dynamicKeepers');
+        datalist.innerHTML = data.map(p => `<option value="${p.name}" data-t="${p.team}">`).join('');
+    });
+
+    // İsim yazarken listede varsa takımı otomatik doldurur
+    function autoTeam(val) {
+        const opts = document.querySelectorAll('#dynamicKeepers option');
+        opts.forEach(o => { if(o.value === val) document.getElementById('gkTeam').value = o.getAttribute('data-t'); });
+    }
+
+    async function saveCS() {
+        const name = document.getElementById('gkInput').value.trim();
         const team = document.getElementById('gkTeam').value;
         const count = parseInt(document.getElementById('csCount').value);
 
-        if (!name) return alert("Lütfen kaleci ismini girin!");
+        if(!name || !team) return alert("Lütfen isim ve takım girin!");
 
-        let csData = JSON.parse(localStorage.getItem(CS_KEY)) || [];
-        const gkIndex = csData.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
+        const snap = await db.ref('cleanSheetsData').once('value');
+        let keepers = snap.val() || [];
+        const idx = keepers.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
 
-        if (gkIndex > -1) {
-            csData[gkIndex].count += count;
+        if(idx > -1) {
+            // Kaleci varsa üstüne ekle (sayı değişkeni 'count' olarak tutuluyor)
+            keepers[idx].count += count;
+            alert(`${name} verisi güncellendi!`);
         } else {
-            csData.push({ name, team, count });
+            // Kaleci yoksa yeni kayıt oluştur
+            keepers.push({ name, team, count: count });
+            alert(`${name} listeye yeni kaleci olarak eklendi!`);
         }
 
-        localStorage.setItem(CS_KEY, JSON.stringify(csData));
-        alert(`${name} için ${count} clean sheet kaydedildi!`);
-        document.getElementById('gkName').value = "";
-    }
-
-    function resetCS() {
-        if(confirm("Tüm verileri silmek istediğinize emin misiniz?")) {
-            localStorage.removeItem(CS_KEY);
-            alert("Sıfırlandı.");
-        }
+        await db.ref('cleanSheetsData').set(keepers);
+        location.reload();
     }
 </script>
 </body>

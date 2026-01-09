@@ -2,247 +2,87 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>⚽ Haftalık Skor Girişi</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #3d195b;
-            --font-color: #343a40;
-            --button-color: #00ff85;
-            --danger-color: #ff4d4d;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #e9ecef;
-            display: flex;
-            justify-content: center;
-            padding: 20px;
-            color: var(--font-color);
-        }
-        .form-container {
-            max-width: 800px;
-            width: 100%;
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-            padding: 30px;
-        }
-        h2 {
-            color: var(--primary-color);
-            border-bottom: 3px solid var(--primary-color);
-            padding-bottom: 10px;
-            text-align: center;
-            margin-bottom: 25px;
-        }
-        .week-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 25px;
-        }
-        .match-card {
-            display: grid;
-            grid-template-columns: 1fr 60px 20px 60px 1fr;
-            align-items: center;
-            gap: 10px;
-            padding: 12px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
-        }
-        select, input[type="number"] {
-            padding: 8px;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-        input[type="number"] { text-align: center; font-weight: bold; }
-        .vs { text-align: center; font-weight: 800; color: var(--primary-color); }
-
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .full-width { grid-column: span 2; }
-        
-        button {
-            padding: 14px;
-            border: none;
-            border-radius: 6px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: 0.3s;
-            text-transform: uppercase;
-        }
-
-        .btn-save { background-color: var(--button-color); color: var(--primary-color); font-size: 16px; }
-        .btn-save:hover { background-color: #00e677; filter: brightness(1.1); }
-
-        .btn-delete { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; font-size: 12px; }
-        .btn-reset { background-color: #eee; color: #666; font-size: 12px; }
-
-        .back-link {
-            display: block;
-            margin-top: 20px;
-            text-align: center;
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: 600;
-        }
+        :root { --primary-color: #3d195b; --button-color: #00ff85; }
+        body { font-family: 'Inter', sans-serif; background-color: #e9ecef; display: flex; justify-content: center; padding: 20px; }
+        .form-container { max-width: 800px; width: 100%; background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .match-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding: 10px; border-bottom: 1px solid #eee; }
+        select, input { padding: 8px; border-radius: 6px; border: 1px solid #ccc; }
+        button { width: 100%; padding: 15px; background: var(--button-color); color: var(--primary-color); border: none; font-weight: 800; border-radius: 8px; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
-
     <div class="form-container">
-        <h2>⚽ Haftalık Maç Sonuçlarını Gir</h2>
-        
-        <div class="week-grid" id="weekGrid">
-            </div>
-        
-        <div class="btn-group">
-            <button class="btn-save full-width" onclick="saveWeek()">Tüm Haftayı Kaydet ve Yayınla</button>
-            <button class="btn-delete" onclick="deleteLastAction()">Son Girilen Haftayı Sil</button>
-            <button class="btn-reset" onclick="resetStats()">Tüm Lig Verilerini Sıfırla</button>
-        </div>
-
-        <a href="index.html" class="back-link">Ana Sayfaya Dön</a>
+        <h2 style="color: var(--primary-color); margin-bottom: 20px;">Haftalık Skor Girişi</h2>
+        <div id="matchesContainer"></div>
+        <button onclick="saveWeek()">Buluta Kaydet</button>
+        <a href="index.html" style="display:block; text-align:center; margin-top:15px; color:var(--primary-color); text-decoration:none; font-weight:600;">Geri Dön</a>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script>
-        const STANDINGS_KEY = 'leagueStandingsData';
-        const MATCHES_KEY = 'lastMatchesData';
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeDf5CxbElVbkl8wGXSAZ9DBxOWxOorxc",
+            authDomain: "premierligrp.firebaseapp.com",
+            databaseURL: "https://premierligrp-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "premierligrp",
+            storageBucket: "premierligrp.firebasestorage.app",
+            messagingSenderId: "762350145530",
+            appId: "1:762350145530:web:657b94791a29bc0ddd1e43"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-        const teamsList = [
-            'Tottenham Hotspur', 'Arsenal', 'Everton', 'Manchester City',
-            'Manchester United', 'Liverpool', 'Newcastle United', 'Brighton',
-            'West Ham United', 'Chelsea', 'Aston Villa', 'Nottingham Forest'
-        ];
+        const teams = ["Arsenal", "Manchester City", "Liverpool", "Tottenham Hotspur", "Manchester United", "Chelsea", "Newcastle United", "Aston Villa", "Brighton", "West Ham United", "Nottingham Forest", "Everton"];
 
-        // 6 adet maç satırı oluştur
-        function createMatchInputs() {
-            const grid = document.getElementById('weekGrid');
-            for (let i = 1; i <= 6; i++) {
-                const matchDiv = document.createElement('div');
-                matchDiv.className = 'match-card';
-                matchDiv.innerHTML = `
-                    <select id="home${i}"><option value="">Ev Sahibi</option></select>
-                    <input type="number" id="hScore${i}" min="0" value="0">
-                    <div class="vs">-</div>
-                    <input type="number" id="aScore${i}" min="0" value="0">
-                    <select id="away${i}"><option value="">Deplasman</option></select>
-                `;
-                grid.appendChild(matchDiv);
+        function createFields() {
+            const container = document.getElementById('matchesContainer');
+            for(let i=1; i<=6; i++) {
+                container.innerHTML += `
+                <div class="match-row">
+                    <select id="h${i}">${teams.map(t=>`<option>${t}</option>`)}</select>
+                    <input type="number" id="hs${i}" value="0" style="width:50px">
+                    <span>-</span>
+                    <input type="number" id="as${i}" value="0" style="width:50px">
+                    <select id="a${i}">${teams.map(t=>`<option>${t}</option>`)}</select>
+                </div>`;
+            }
+        }
+
+        async function saveWeek() {
+            const snapshot = await db.ref('standings').once('value');
+            let standings = snapshot.val();
+            let lastMatches = [];
+
+            for(let i=1; i<=6; i++) {
+                const hName = document.getElementById(`h${i}`).value;
+                const aName = document.getElementById(`a${i}`).value;
+                const hs = parseInt(document.getElementById(`hs${i}`).value);
+                const as = parseInt(document.getElementById(`as${i}`).value);
+
+                const hTeam = standings.find(t => t.name === hName);
+                const aTeam = standings.find(t => t.name === aName);
+
+                hTeam.O++; aTeam.O++;
+                hTeam.AG += hs; hTeam.YG += as; hTeam.AV = hTeam.AG - hTeam.YG;
+                aTeam.AG += as; aTeam.YG += hs; aTeam.AV = aTeam.AG - aTeam.YG;
+
+                if(hs > as) { hTeam.G++; hTeam.Puan += 3; aTeam.M++; }
+                else if(as > hs) { aTeam.G++; aTeam.Puan += 3; hTeam.M++; }
+                else { hTeam.B++; aTeam.B++; hTeam.Puan++; aTeam.Puan++; }
                 
-                // Select içlerini doldur
-                const hSel = document.getElementById(`home${i}`);
-                const aSel = document.getElementById(`away${i}`);
-                teamsList.forEach(t => {
-                    hSel.add(new Option(t, t));
-                    aSel.add(new Option(t, t));
-                });
-            }
-        }
-
-        function adjustStats(standings, teamName, gs, gc, w, d, l, multiplier = 1) {
-            const team = standings.find(t => t.name === teamName);
-            if (team) {
-                team.O += (1 * multiplier);
-                team.AG += (gs * multiplier);
-                team.YG += (gc * multiplier);
-                team.G += (w * multiplier);
-                team.B += (d * multiplier);
-                team.M += (l * multiplier);
-                team.Puan += ((w * 3 + d * 1) * multiplier);
-                team.AV = team.AG - team.YG;
-            }
-        }
-
-        function saveWeek() {
-            let weekData = [];
-            let usedTeams = new Set();
-
-            // Verileri topla ve kontrol et
-            for (let i = 1; i <= 6; i++) {
-                const hName = document.getElementById(`home${i}`).value;
-                const aName = document.getElementById(`away${i}`).value;
-                const hScore = parseInt(document.getElementById(`hScore${i}`).value);
-                const aScore = parseInt(document.getElementById(`aScore${i}`).value);
-
-                if (!hName || !aName) return alert(`${i}. Maçta takımlar seçilmemiş!`);
-                if (hName === aName) return alert(`${i}. Maçta aynı takım birbiriyle oynayamaz!`);
-                if (usedTeams.has(hName) || usedTeams.has(aName)) return alert("Bir takım aynı hafta birden fazla maç yapamaz!");
-
-                usedTeams.add(hName);
-                usedTeams.add(aName);
-                
-                weekData.push({ hName, aName, hScore, aScore });
+                lastMatches.push({home: hName, away: aName, score: `${hs}-${as}`});
             }
 
-            if (!confirm("6 maçın sonucunu toplu olarak kaydetmek istediğinize emin misiniz?")) return;
-
-            let standings = JSON.parse(localStorage.getItem(STANDINGS_KEY)) || teamsList.map(n => ({name:n, O:0, G:0, B:0, M:0, AG:0, YG:0, AV:0, Puan:0}));
-            let matchesHistory = JSON.parse(localStorage.getItem(MATCHES_KEY)) || [];
-
-            // Her bir maçı işle
-            weekData.forEach(m => {
-                let winH = 0, draw = 0, lossH = 0;
-                if (m.hScore > m.aScore) winH = 1;
-                else if (m.aScore > m.hScore) lossH = 1;
-                else draw = 1;
-
-                adjustStats(standings, m.hName, m.hScore, m.aScore, winH, draw, lossH);
-                adjustStats(standings, m.aName, m.aScore, m.hScore, lossH, draw, winH);
-
-                matchesHistory.unshift({ 
-                    home: m.hName, 
-                    away: m.aName, 
-                    score: `${m.hScore} - ${m.aScore}`,
-                    raw: m,
-                    weekBatch: true // Toplu silme için işaretleyici
-                });
-            });
-
-            localStorage.setItem(STANDINGS_KEY, JSON.stringify(standings));
-            localStorage.setItem(MATCHES_KEY, JSON.stringify(matchesHistory));
-
-            alert("Haftalık sonuçlar başarıyla kaydedildi!");
-            window.location.href = 'index.html';
+            await db.ref('standings').set(standings);
+            await db.ref('lastMatches').set(lastMatches);
+            alert("Kaydedildi!");
+            window.location.href = "puan_durumu.html";
         }
-
-        function deleteLastAction() {
-            let matches = JSON.parse(localStorage.getItem(MATCHES_KEY)) || [];
-            if (matches.length < 6) return alert("Silinecek tam hafta bulunamadı!");
-
-            if (!confirm("Son girilen 6 maçı (tam haftayı) silmek ve puanları geri almak üzeresiniz. Onaylıyor musunuz?")) return;
-
-            let standings = JSON.parse(localStorage.getItem(STANDINGS_KEY));
-
-            // Son 6 maçı geri al
-            for (let i = 0; i < 6; i++) {
-                const m = matches[0].raw;
-                let winH = 0, draw = 0, lossH = 0;
-                if (m.hScore > m.aScore) winH = 1;
-                else if (m.aScore > m.hScore) lossH = 1;
-                else draw = 1;
-
-                adjustStats(standings, m.hName, m.hScore, m.aScore, winH, draw, lossH, -1);
-                adjustStats(standings, m.aName, m.aScore, m.hScore, lossH, draw, winH, -1);
-                
-                matches.shift();
-            }
-
-            localStorage.setItem(STANDINGS_KEY, JSON.stringify(standings));
-            localStorage.setItem(MATCHES_KEY, JSON.stringify(matches));
-            alert("Son girilen hafta silindi.");
-            location.reload();
-        }
-
-        function resetStats() {
-            if (confirm("DİKKAT! Tüm veriler sıfırlanacak!")) {
-                localStorage.clear();
-                location.reload();
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', createMatchInputs);
+        createFields();
     </script>
 </body>
 </html>
