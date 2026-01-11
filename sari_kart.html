@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premier League | Gol Krallığı</title>
+    <title>Premier League | Sarı Kartlar</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --bg-color: #f4f7f9; --card-bg: #ffffff; --text-dark: #1f2937; --text-muted: #6b7280; --pl-purple: #3d195b; --pl-green: #00ff85; --border-color: #e5e7eb; --row-hover: #f9fafb; }
+        :root { --bg-color: #f4f7f9; --card-bg: #ffffff; --text-dark: #1f2937; --text-muted: #6b7280; --pl-purple: #3d195b; --pl-green: #00ff85; --border-color: #e5e7eb; --row-hover: #f9fafb; --yellow-card: #ffcc00; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-dark); height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
         .main-container { width: 95%; max-width: 1200px; height: 98vh; background: var(--card-bg); border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); display: flex; flex-direction: column; padding: 25px 40px; border: 1px solid var(--border-color); }
@@ -20,7 +20,7 @@
         th { position: sticky; top: 0; background: white; padding: 15px 10px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); border-bottom: 2px solid var(--bg-color); text-align: left; }
         td { padding: 12px 10px; font-size: 0.95rem; border-bottom: 1px solid var(--bg-color); }
         .rank-col { width: 60px; font-weight: 700; color: var(--pl-purple); }
-        .goals-col { font-weight: 800; color: #000; text-align: center; background: rgba(0, 255, 133, 0.1); width: 80px; }
+        .card-col { font-weight: 800; color: #000; text-align: center; background: var(--yellow-card); width: 60px; border-radius: 4px; border: 1px solid #d4ac0d; }
     </style>
 </head>
 <body>
@@ -28,20 +28,20 @@
         <nav class="navbar">
             <a href="index.html" class="nav-btn">Ana Sayfa</a>
             <a href="puan_durumu.html" class="nav-btn">Puan Durumu</a>
-            <a href="gol_kralligi.html" class="nav-btn active">Gol Krallığı</a>
+            <a href="gol_kralligi.html" class="nav-btn">Gol Krallığı</a>
             <a href="asist_kralligi.html" class="nav-btn">Asist Krallığı</a>
             <a href="gol_yenmeyen_mac.html" class="nav-btn">Gol Yenmeyen Maç</a>
-            <a href="sari_kart.html" class="nav-btn">Sarı Kartlar</a>
+            <a href="sari_kart.html" class="nav-btn active">Sarı Kartlar</a>
             <a href="kirmizi_kart.html" class="nav-btn">Kırmızı Kartlar</a>
             <a href="fikstur.html" class="nav-btn">Fikstür</a>
         </nav>
         <div class="header">
-            <div class="header-title"><h1>Gol Krallığı</h1><p>Sezon 2025/26</p></div>
+            <div class="header-title"><h1>Sarı Kartlar</h1><p>Sezon 2025/26</p></div>
             <div id="currentDate" style="font-size: 0.85rem; color: var(--text-muted);"></div>
         </div>
         <div class="table-wrapper">
-            <table id="scorersTable">
-                <thead><tr><th>Sıra</th><th>Oyuncu</th><th>Takım</th><th style="text-align:center">Gol</th></tr></thead>
+            <table id="yellowCardsTable">
+                <thead><tr><th>Sıra</th><th>Oyuncu</th><th>Takım</th><th style="text-align:center">Sarı Kart</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
@@ -52,22 +52,29 @@
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBeDf5CxbElVbkl8wGXSAZ9DBxOWxOorxc",
-            authDomain: "premierligrp.firebaseapp.com",
             databaseURL: "https://premierligrp-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "premierligrp",
-            storageBucket: "premierligrp.firebasestorage.app",
-            messagingSenderId: "762350145530",
             appId: "1:762350145530:web:657b94791a29bc0ddd1e43"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        db.ref('topScorersData').on('value', snapshot => {
-            const scorers = snapshot.val() || [];
-            scorers.sort((a, b) => b.goals - a.goals);
-            const tbody = document.querySelector('#scorersTable tbody');
-            tbody.innerHTML = scorers.length ? scorers.map((p, i) => `
-                <tr><td class="rank-col">${i+1}</td><td>${p.name}</td><td>${p.team}</td><td class="goals-col">${p.goals}</td></tr>
+        db.ref('yellowCardsData').on('value', snapshot => {
+            const players = snapshot.val() || [];
+            const playersArray = Array.isArray(players) ? players : Object.values(players);
+            
+            playersArray.sort((a, b) => b.cards - a.cards);
+            
+            const tbody = document.querySelector('#yellowCardsTable tbody');
+            tbody.innerHTML = playersArray.length ? playersArray.map((p, i) => `
+                <tr>
+                    <td class="rank-col">${i+1}</td>
+                    <td>${p.name}</td>
+                    <td>${p.team}</td>
+                    <td style="display:flex; justify-content:center; padding-top:8px">
+                        <div class="card-col">${p.cards}</div>
+                    </td>
+                </tr>
             `).join('') : '<tr><td colspan="4" style="text-align:center; padding:20px;">Veri bulunamadı.</td></tr>';
             document.getElementById('currentDate').textContent = new Date().toLocaleDateString('tr-TR');
         });
