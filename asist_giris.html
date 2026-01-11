@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>➕ Asist Girişi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --pl-purple: #3d195b; --pl-green: #00ff85; }
+        body { font-family: 'Inter', sans-serif; background: #e9ecef; display: flex; justify-content: center; padding: 50px; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); width: 100%; max-width: 400px; }
+        .form-group { display: flex; flex-direction: column; gap: 15px; margin-top:20px; }
+        input, select { padding: 12px; border: 1px solid #ced4da; border-radius: 8px; }
+        button { background: var(--pl-green); color: var(--pl-purple); border: none; padding: 15px; border-radius: 8px; font-weight: 800; cursor: pointer; }
+        .hint { font-size: 0.8rem; color: #666; margin-bottom: -10px; margin-left: 5px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2 style="color:var(--pl-purple); text-align:center;">🎯 Asist Girişi</h2>
+    <div class="form-group">
+        <p class="hint">Oyuncu Ara veya Yeni Yaz:</p>
+        <input type="text" id="playerName" list="dynamicAssists" placeholder="Oyuncu Adı" oninput="autoTeam(this.value)">
+        <datalist id="dynamicAssists">
+            </datalist>
+
+        <p class="hint">Takım:</p>
+        <select id="playerTeam">
+            <option value="">Takım Seçin</option>
+            <option>Arsenal</option><option>Manchester City</option><option>Liverpool</option>
+            <option>Tottenham Hotspur</option><option>Manchester United</option><option>Chelsea</option>
+            <option>Newcastle United</option><option>Nottingham Forest</option><option>Everton</option>
+            <option>Aston Villa</option><option>Brighton</option><option>West Ham United</option>
+        </select>
+
+        <p class="hint">Asist Sayısı:</p>
+        <input type="number" id="assistCount" min="1" value="1">
+        <button onclick="addAssist()">Asisti Buluta Kaydet</button>
+    </div>
+    <a href="index.html" style="display:block; text-align:center; margin-top:15px; text-decoration:none; color:var(--pl-purple);">Geri Dön</a>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBeDf5CxbElVbkl8wGXSAZ9DBxOWxOorxc",
+        authDomain: "premierligrp.firebaseapp.com",
+        databaseURL: "https://premierligrp-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "premierligrp",
+        appId: "1:762350145530:web:657b94791a29bc0ddd1e43"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Sayfa açıldığında daha önce kaydedilen asistçileri listeye çek
+    db.ref('topAssistsData').on('value', snapshot => {
+        const data = snapshot.val() || [];
+        const datalist = document.getElementById('dynamicAssists');
+        datalist.innerHTML = data.map(p => `<option value="${p.name}" data-t="${p.team}">`).join('');
+    });
+
+    // İsim yazarken listede varsa takımı otomatik seç
+    function autoTeam(val) {
+        const opts = document.querySelectorAll('#dynamicAssists option');
+        opts.forEach(o => { 
+            if(o.value === val) document.getElementById('playerTeam').value = o.getAttribute('data-t'); 
+        });
+    }
+
+    async function addAssist() {
+        const name = document.getElementById('playerName').value.trim();
+        const team = document.getElementById('playerTeam').value;
+        const assists = parseInt(document.getElementById('assistCount').value);
+
+        if (!name || !team) return alert("Lütfen isim ve takım girin!");
+
+        const snap = await db.ref('topAssistsData').once('value');
+        let data = snap.val() || [];
+        const idx = data.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
+
+        if (idx > -1) {
+            // Oyuncu varsa: Asist sayısını arttır
+            data[idx].assists += assists;
+            alert(`${name} zaten listedeydi, asist sayısı arttırıldı!`);
+        } else {
+            // Oyuncu yoksa: Yeni ekle
+            data.push({ name, team, assists });
+            alert(`${name} listeye yeni oyuncu olarak eklendi!`);
+        }
+
+        await db.ref('topAssistsData').set(data);
+        document.getElementById('playerName').value = "";
+        location.reload();
+    }
+</script>
+</body>
+</html>

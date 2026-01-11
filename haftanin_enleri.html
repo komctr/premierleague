@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haftanın Enleri | Premier League</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --pl-purple: #3d195b; --pl-green: #00ff87; --pl-pink: #ff2882; 
+            --pl-blue: #04f5ff; --bg: #f8f8f8;
+        }
+
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); margin: 0; color: #242424; overflow-x: hidden; }
+
+        /* Header & Nav */
+        .header { background: var(--pl-purple); padding: 15px 5%; display: flex; align-items: center; border-bottom: 4px solid var(--pl-green); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .header a { color: white; text-decoration: none; font-weight: 800; font-size: 22px; text-transform: uppercase; }
+        .header a span { color: var(--pl-green); }
+
+        .week-bar { background: white; border-bottom: 1px solid #ddd; padding: 12px 5%; display: flex; overflow-x: auto; gap: 12px; scrollbar-width: none; }
+        .week-btn { padding: 8px 20px; border-radius: 6px; border: 1px solid #eee; background: white; font-weight: 700; cursor: pointer; color: #666; transition: 0.3s; }
+        .week-btn.active { background: var(--pl-purple); color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(61,25,91,0.3); }
+
+        /* Main Layout */
+        .container { max-width: 1400px; margin: 30px auto; padding: 0 20px; }
+        
+        .layout-wrapper {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        /* Left Column: Awards List */
+        .awards-stack { display: flex; flex-direction: column; gap: 20px; }
+
+        .award-card {
+            background: white; border-radius: 12px; overflow: hidden;
+            border: 1px solid #eee; box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: slideIn 0.5s ease forwards; opacity: 0;
+        }
+        .award-card:hover { transform: scale(1.02); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+
+        .tag { padding: 10px 15px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: white; }
+        .tag.gol { background: var(--pl-green); color: var(--pl-purple); }
+        .tag.esek { background: var(--pl-pink); }
+        .tag.hoca { background: var(--pl-purple); }
+
+        .media-container { width: 100%; aspect-ratio: 16/9; background: #000; position: relative; }
+        .media-container iframe, .media-container video, .media-container img { width: 100%; height: 100%; border: none; object-fit: cover; }
+
+        .card-body { padding: 15px; }
+        .card-body h3 { margin: 0; font-size: 18px; font-weight: 700; color: var(--pl-purple); }
+
+        /* Right Column: The Squad */
+        .squad-section { position: sticky; top: 110px; }
+        .squad-card {
+            background: white; border-radius: 15px; overflow: hidden;
+            border: 2px solid var(--pl-blue); box-shadow: 0 10px 30px rgba(4,245,255,0.1);
+        }
+        .squad-header { background: var(--pl-blue); color: var(--pl-purple); padding: 15px; font-weight: 800; text-transform: uppercase; text-align: center; font-size: 18px; }
+        
+        .squad-media { width: 100%; height: auto; min-height: 600px; display: flex; align-items: center; justify-content: center; background: #fff; }
+        .squad-media img { width: 100%; height: auto; display: block; }
+
+        /* Animations */
+        @keyframes slideIn {
+            from { transform: translateX(-30px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .fade-up { animation: fadeUp 0.6s ease-out forwards; }
+        @keyframes fadeUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 1000px) {
+            .layout-wrapper { grid-template-columns: 1fr; }
+            .squad-section { position: static; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header"><a href="index.html">Premier<span>League</span></a></header>
+<div class="week-bar" id="weekNav"></div>
+
+<div class="container">
+    <div id="contentArea" class="layout-wrapper">
+        <div style="grid-column: 1/-1; text-align: center; padding: 100px; color: #aaa;">Lütfen hafta seçin kral...</div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBeDf5CxbElVbkl8wGXSAZ9DBxOWxOorxc",
+        authDomain: "premierligrp.firebaseapp.com",
+        databaseURL: "https://premierligrp-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "premierligrp",
+        storageBucket: "premierligrp.firebasestorage.app",
+        messagingSenderId: "762350145530",
+        appId: "1:762350145530:web:657b94791a29bc0ddd1e43"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const weekNav = document.getElementById("weekNav");
+    const contentArea = document.getElementById("contentArea");
+
+    for(let i=1; i<=22; i++) {
+        const btn = document.createElement("button");
+        btn.className = "week-btn"; btn.innerText = i + ". Hafta";
+        btn.onclick = () => loadWeek(i, btn);
+        weekNav.appendChild(btn);
+    }
+
+    function loadWeek(num, btn) {
+        document.querySelectorAll('.week-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        onValue(ref(db, 'haftanin_enleri/' + num), (snap) => {
+            const d = snap.val();
+            if(!d) { contentArea.innerHTML = "<p>Bu hafta daha girilmemiş.</p>"; return; }
+            
+            contentArea.innerHTML = `
+                <div class="awards-stack">
+                    <div class="award-card" style="animation-delay: 0.1s">
+                        <div class="tag gol">⚽ Haftanın Golü</div>
+                        <div class="media-container">${getMedia(d.gol.video)}</div>
+                        <div class="card-body"><h3>${d.gol.name}</h3></div>
+                    </div>
+
+                    <div class="award-card" style="animation-delay: 0.2s">
+                        <div class="tag esek">🫏 Haftanın Eşeği</div>
+                        <div class="media-container">${getMedia(d.esek.video)}</div>
+                        <div class="card-body"><h3>${d.esek.name}</h3></div>
+                    </div>
+
+                    <div class="award-card" style="animation-delay: 0.3s">
+                        <div class="tag hoca">📋 Haftanın Hocası</div>
+                        <div class="media-container"><img src="${d.hoca.img}"></div>
+                        <div class="card-body"><h3>${d.hoca.name}</h3></div>
+                    </div>
+                </div>
+
+                <div class="squad-section fade-up">
+                    <div class="squad-card">
+                        <div class="squad-header">🛡️ HAFTANIN TAKIMI</div>
+                        <div class="squad-media"><img src="${d.takim.img}"></div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function getMedia(url) {
+        if(!url) return "";
+        if(url.includes("streamable")) return `<iframe src="https://streamable.com/e/${url.split("/").pop()}?autoplay=0" allowfullscreen></iframe>`;
+        if(url.includes("youtube") || url.includes("youtu.be")) {
+            let id = url.includes("v=") ? url.split("v=")[1].substring(0,11) : url.split("/").pop();
+            return `<iframe src="https://www.youtube.com/embed/${id}?rel=0" allowfullscreen></iframe>`;
+        }
+        return `<video controls><source src="${url}"></video>`;
+    }
+</script>
+</body>
+</html>

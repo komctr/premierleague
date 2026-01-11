@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Sarı Kart Veri Girişi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f4f7f9; padding: 40px; display: flex; justify-content: center; }
+        .form-container { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h2 { color: #3d195b; margin-bottom: 20px; }
+        label { display: block; margin-top: 15px; font-weight: 600; font-size: 0.9rem; }
+        input, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 6px; }
+        button { width: 100%; padding: 12px; margin-top: 20px; border: none; border-radius: 6px; font-weight: 800; cursor: pointer; }
+        .save-btn { background: #00ff85; color: #3d195b; }
+        .reset-btn { background: #ff4d4d; color: white; margin-top: 10px; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Sarı Kart Girişi</h2>
+        <label>Oyuncu Adı:</label>
+        <input type="text" id="playerName" placeholder="Örn: Casemiro">
+        
+        <label>Takım:</label>
+        <select id="playerTeam">
+            <option>Arsenal</option><option>Manchester City</option><option>Liverpool</option>
+            <option>Tottenham Hotspur</option><option>Manchester United</option><option>Chelsea</option>
+            <option>Newcastle United</option><option>Aston Villa</option><option>Brighton</option>
+            <option>West Ham United</option><option>Nottingham Forest</option><option>Everton</option>
+        </select>
+
+        <label>Sarı Kart Sayısı:</label>
+        <input type="number" id="playerCards" value="1">
+
+        <button class="save-btn" onclick="saveData()">Veriyi Kaydet / Güncelle</button>
+        <button class="reset-btn" onclick="resetTable()">Tüm Listeyi Sıfırla</button>
+        <br><br>
+        <a href="sari_kart.html">Listeye Git</a>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeDf5CxbElVbkl8wGXSAZ9DBxOWxOorxc",
+            databaseURL: "https://premierligrp-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "premierligrp",
+            appId: "1:762350145530:web:657b94791a29bc0ddd1e43"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        async function saveData() {
+            const name = document.getElementById('playerName').value;
+            const team = document.getElementById('playerTeam').value;
+            const cards = parseInt(document.getElementById('playerCards').value);
+
+            if(!name) return alert("İsim gir!");
+
+            const snapshot = await db.ref('yellowCardsData').once('value');
+            let list = snapshot.val() || [];
+            
+            // Oyuncu zaten varsa kartını güncelle, yoksa ekle
+            const index = list.findIndex(p => p.name === name);
+            if(index > -1) {
+                list[index].cards = cards;
+            } else {
+                list.push({ name, team, cards });
+            }
+
+            await db.ref('yellowCardsData').set(list);
+            alert("Sarı kart güncellendi!");
+            document.getElementById('playerName').value = "";
+        }
+
+        function resetTable() {
+            if(confirm("Tüm listeyi silmek istediğine emin misin?")) {
+                db.ref('yellowCardsData').set([]);
+            }
+        }
+    </script>
+</body>
+</html>

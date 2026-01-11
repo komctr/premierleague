@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İzleniyor | Premier League</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --pl-purple: #3d195b; --pl-green: #00ff87; --bg: #050505; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); margin: 0; color: white; overflow-x: hidden; }
+        
+        .nav-header { background: var(--pl-purple); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--pl-green); box-shadow: 0 0 20px rgba(0, 255, 135, 0.2); }
+        .logo { color: white; text-decoration: none; font-weight: 800; font-size: 20px; text-transform: uppercase; }
+        .logo span { color: var(--pl-green); }
+        
+        .main-stage { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
+        .video-box { background: #000; border-radius: 15px; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,1); border: 1px solid #222; position: relative; }
+        
+        .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; }
+        .video-wrapper iframe, .video-wrapper video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        
+        .info-bar { margin-top: 30px; border-left: 5px solid var(--pl-green); padding-left: 20px; }
+        .info-bar h1 { margin: 0; font-size: 28px; font-weight: 800; color: white; }
+        .info-bar p { color: #888; margin: 10px 0 0 0; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; }
+        
+        .back-link { display: inline-block; margin-top: 40px; color: var(--pl-green); text-decoration: none; font-weight: 600; padding: 10px 25px; border: 1px solid var(--pl-green); border-radius: 50px; }
+    </style>
+</head>
+<body>
+
+<header class="nav-header">
+    <a href="index.html" class="logo">Premier<span>League</span></a>
+</header>
+
+<div class="main-stage">
+    <div class="video-box">
+        <div class="video-wrapper" id="playerTarget"></div>
+    </div>
+    <div class="info-bar">
+        <p>Maç Tekrarı</p>
+        <h1 id="mTitle">Yükleniyor...</h1>
+    </div>
+    <a href="mac_tekrarlari.html" class="back-link">← DİĞER MAÇLARA GÖZ AT</a>
+</div>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const source = params.get('v');
+    const title = params.get('t');
+    const target = document.getElementById("playerTarget");
+
+    if(source) {
+        document.getElementById("mTitle").innerText = decodeURIComponent(title || "Maç Özeti");
+
+        // --- DAILYMOTION ÇÖZÜMÜ ---
+        if(source.includes("dailymotion.com") || source.includes("dai.ly")) {
+            let id = "";
+            if(source.includes("video/")) {
+                id = source.split("video/")[1].split(/[?#_]/)[0];
+            } else {
+                id = source.split("/").pop().split(/[?#_]/)[0];
+            }
+            // 'referrerpolicy' ve 'allow' özellikleri Dailymotion için hayatidir
+            target.innerHTML = `
+                <iframe 
+                    src="https://www.dailymotion.com/embed/video/${id}?autoplay=1&mute=0" 
+                    allow="autoplay; fullscreen; picture-in-picture" 
+                    allowfullscreen 
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>`;
+        } 
+        // --- YOUTUBE ÇÖZÜMÜ ---
+        else if(source.includes("youtube.com") || source.includes("youtu.be")) {
+            let id = source.includes("v=") ? source.split("v=")[1].substring(0,11) : source.split("/").pop();
+            target.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" allowfullscreen></iframe>`;
+        }
+        // --- STREAMABLE ÇÖZÜMÜ ---
+        else if(source.includes("streamable.com")) {
+            const id = source.split("/").pop();
+            target.innerHTML = `<iframe src="https://streamable.com/e/${id}" allowfullscreen></iframe>`;
+        }
+        // --- DİREKT MP4 ---
+        else {
+            target.innerHTML = `<video controls autoplay><source src="${source}" type="video/mp4"></video>`;
+        }
+    } else {
+        document.getElementById("mTitle").innerText = "Video Kaynağı Bulunamadı!";
+    }
+</script>
+</body>
+</html>

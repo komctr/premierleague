@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TM - Haber Yönetim Paneli</title>
+    <style>
+        :root { --tm-dark: #1a3151; --tm-blue: #064488; --tm-light: #e1e1e1; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--tm-light); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .admin-box { background: white; width: 100%; max-width: 500px; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border-top: 8px solid var(--tm-dark); }
+        h2 { color: var(--tm-dark); text-align: center; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px; }
+        input, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; background: #f9f9f9; }
+        input:focus { border-color: var(--tm-blue); outline: none; background: #fff; }
+        button { background: var(--tm-dark); color: white; border: none; padding: 15px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        button:hover { background: var(--tm-blue); transform: translateY(-2px); }
+        button:disabled { background: #999; cursor: not-allowed; transform: none; }
+        .info-label { font-size: 12px; color: #666; margin-bottom: -5px; display: block; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="admin-box">
+    <h2>Haber Ekleme Paneli</h2>
+    
+    <span class="info-label">Haber Başlığı</span>
+    <input type="text" id="title" placeholder="Örn: Arda Güler Real Madrid'de Kalıyor">
+    
+    <span class="info-label">Kapak Resmi URL (Kart Görünümü)</span>
+    <input type="text" id="coverImg" placeholder="https://resim-url.com/resim.jpg">
+    
+    <span class="info-label">Kısa Özet</span>
+    <input type="text" id="shortInfo" placeholder="Haberi özetleyen bir cümle...">
+    
+    <span class="info-label">İçerik Fotoğrafı URL (Haberin içi)</span>
+    <input type="text" id="mainImg" placeholder="https://resim-url.com/ana-resim.jpg">
+    
+    <span class="info-label">Haber Detayı</span>
+    <textarea id="content" rows="5" placeholder="Haberin tüm metnini buraya yazın..."></textarea>
+    
+    <button id="btnSave">HABERİ YAYINLA</button>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBeDf5CxbElVbkl8wGXSAZ9DBxOWxOorxc",
+        authDomain: "premierligrp.firebaseapp.com",
+        databaseURL: "https://premierligrp-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "premierligrp",
+        storageBucket: "premierligrp.firebasestorage.app",
+        messagingSenderId: "762350145530",
+        appId: "1:762350145530:web:657b94791a29bc0ddd1e43"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const btnSave = document.getElementById("btnSave");
+
+    btnSave.addEventListener("click", () => {
+        // Değerleri al
+        const title = document.getElementById("title").value.trim();
+        const coverImg = document.getElementById("coverImg").value.trim();
+        const shortInfo = document.getElementById("shortInfo").value.trim();
+        const mainImg = document.getElementById("mainImg").value.trim();
+        const content = document.getElementById("content").value.trim();
+
+        // Basit doğrulama
+        if(!title || !content) {
+            alert("Lütfen başlık ve haber içeriğini doldurun!");
+            return;
+        }
+
+        // Çift tıklamayı engellemek için butonu kilitle
+        btnSave.disabled = true;
+        btnSave.innerText = "Gönderiliyor...";
+
+        // Firebase'e veri gönderimi
+        const newsRef = ref(db, 'haberler');
+        const newPostRef = push(newsRef); // Benzersiz ID oluşturur
+
+        set(newPostRef, {
+            title: title,
+            coverImg: coverImg,
+            shortInfo: shortInfo,
+            mainImg: mainImg,
+            content: content,
+            date: new Date().toLocaleDateString('tr-TR')
+        })
+        .then(() => {
+            alert("Haber başarıyla eklendi!");
+            window.location.href = "haberler.html"; 
+        })
+        .catch((error) => {
+            alert("Hata oluştu: " + error.message);
+            btnSave.disabled = false;
+            btnSave.innerText = "HABERİ YAYINLA";
+        });
+    });
+</script>
+
+</body>
+</html>

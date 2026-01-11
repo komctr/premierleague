@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>PL | Maç Tekrarları</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --pl-purple: #3d195b; --pl-green: #00ff87; }
+        body { font-family: 'Poppins', sans-serif; background-color: #f2f2f2; margin: 0; }
+        .top-nav { background: var(--pl-purple); height: 70px; display: flex; align-items: center; border-bottom: 5px solid var(--pl-green); }
+        .logo-link { text-decoration: none; margin-left: 30px; color: white; font-size: 24px; font-weight: 800; text-transform: uppercase; }
+        .logo-link span { color: var(--pl-green); }
+        .sub-header { background: #fff; padding: 25px 0; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .container { max-width: 1200px; margin: auto; padding: 0 20px; }
+        .match-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 25px; }
+        .match-card { background: white; border-radius: 12px; overflow: hidden; text-decoration: none; color: #000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.3s; position: relative; }
+        .match-card:hover { transform: scale(1.03); }
+        .match-card img { width: 100%; height: 200px; object-fit: cover; }
+        .play-icon { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color: var(--pl-green); padding: 15px; border-radius: 50%; font-size: 20px; }
+        .match-info { padding: 15px; text-align: center; color: var(--pl-purple); font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<div class="top-nav">
+    <a href="index.html" class="logo-link">Premier<span>League</span></a>
+</div>
+
+<div class="sub-header">
+    <div class="container"><h2>Maç Tekrarları</h2></div>
+</div>
+
+<div class="container">
+    <div class="match-grid" id="matchList">
+        </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+
+    const firebaseConfig = { /* Senin Config Bilgilerin */ 
+        apiKey: "AIzaSyBeDf5CxbElVbkl8wGXSAZ9DBxOWxOorxc",
+        authDomain: "premierligrp.firebaseapp.com",
+        databaseURL: "https://premierligrp-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "premierligrp",
+        storageBucket: "premierligrp.firebasestorage.app",
+        messagingSenderId: "762350145530",
+        appId: "1:762350145530:web:657b94791a29bc0ddd1e43"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    onValue(ref(db, 'mac_tekrarlari'), (snapshot) => {
+        const container = document.getElementById("matchList");
+        container.innerHTML = "";
+        snapshot.forEach((child) => {
+            const data = child.val();
+            container.innerHTML += `
+                <a href="mac_izle.html?v=${data.videoId}&t=${encodeURIComponent(data.title)}" class="match-card">
+                    <img src="${data.thumb}" alt="match">
+                    <div class="play-icon">▶</div>
+                    <div class="match-info">${data.title}</div>
+                </a>
+            `;
+        });
+    });
+</script>
+</body>
+</html>

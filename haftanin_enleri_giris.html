@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>PL Admin | Haftanın Enleri Girişi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --pl-purple: #3d195b; --pl-green: #00ff87; --pl-pink: #ff2882; --pl-blue: #04f5ff; }
+        body { font-family: 'Poppins', sans-serif; background: #f0f0f0; padding: 40px 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
+        h2 { color: var(--pl-purple); font-weight: 800; text-align: center; text-transform: uppercase; margin-bottom: 30px; border-bottom: 3px solid var(--pl-green); padding-bottom: 10px; }
+        
+        .week-box { background: var(--pl-purple); color: white; padding: 20px; border-radius: 12px; margin-bottom: 30px; text-align: center; }
+        select { padding: 10px; border-radius: 8px; width: 200px; font-weight: bold; }
+
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        .card { padding: 20px; border-radius: 15px; border: 2px solid #eee; background: #fff; }
+        .card h3 { margin-top: 0; font-size: 15px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        
+        label { font-size: 11px; font-weight: 700; color: #777; display: block; margin-top: 12px; text-transform: uppercase; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-top: 5px; box-sizing: border-box; }
+        
+        .gol { border-top: 5px solid var(--pl-green); }
+        .esek { border-top: 5px solid var(--pl-pink); }
+        .takim { border-top: 5px solid var(--pl-blue); }
+        .hoca { border-top: 5px solid var(--pl-purple); }
+
+        button { width: 100%; padding: 20px; background: var(--pl-purple); color: white; border: none; border-radius: 12px; font-weight: 800; font-size: 18px; cursor: pointer; margin-top: 30px; transition: 0.3s; }
+        button:hover { background: var(--pl-green); color: var(--pl-purple); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Haftanın Enleri - Editör</h2>
+
+    <div class="week-box">
+        <span>GÜNCELLENECEK HAFTA:</span>
+        <select id="weekNumber">
+            <script>for(let i=1; i<=22; i++) document.write(`<option value="${i}">${i}. Hafta</option>`);</script>
+        </select>
+    </div>
+
+    <div class="grid-inputs">
+        <div class="card gol">
+            <h3>⚽ Haftanın Golü</h3>
+            <label>Oyuncu & Takım</label>
+            <input type="text" id="gol_name" placeholder="Örn: Rashford (Man Utd)">
+            <label>Video URL (Streamable/YouTube)</label>
+            <input type="text" id="gol_video" placeholder="Video linkini buraya yapıştır">
+        </div>
+
+        <div class="card esek">
+            <h3>🫏 Haftanın Eşeği</h3>
+            <label>İsim / Olay</label>
+            <input type="text" id="esek_name" placeholder="Örn: Onana (Hatalı Gol)">
+            <label>Video URL (Streamable/YouTube)</label>
+            <input type="text" id="esek_video" placeholder="Video linkini buraya yapıştır">
+        </div>
+
+        <div class="card takim">
+            <h3>🛡️ Haftanın Karma Kadrosu</h3>
+            <label>Kadro Görseli URL (Resim)</label>
+            <input type="text" id="takim_img" placeholder="Hazırladığın kadro resmi linki">
+        </div>
+
+        <div class="card hoca">
+            <h3>📋 Haftanın Teknik Direktörü</h3>
+            <label>Hoca İsmi</label>
+            <input type="text" id="hoca_name" placeholder="Örn: Unai Emery">
+            <label>Görsel URL</label>
+            <input type="text" id="hoca_img" placeholder="Hoca resim linki">
+        </div>
+    </div>
+
+    <button id="btnSave">HAFTAYI YAYINA AL</button>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBeDf5CxbElVbkl8wGXSAZ9DBxOWxOorxc",
+        authDomain: "premierligrp.firebaseapp.com",
+        databaseURL: "https://premierligrp-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "premierligrp",
+        storageBucket: "premierligrp.firebasestorage.app",
+        messagingSenderId: "762350145530",
+        appId: "1:762350145530:web:657b94791a29bc0ddd1e43"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    document.getElementById("btnSave").addEventListener("click", () => {
+        const week = document.getElementById("weekNumber").value;
+        const data = {
+            gol: { name: document.getElementById("gol_name").value, video: document.getElementById("gol_video").value },
+            esek: { name: document.getElementById("esek_name").value, video: document.getElementById("esek_video").value },
+            takim: { img: document.getElementById("takim_img").value },
+            hoca: { name: document.getElementById("hoca_name").value, img: document.getElementById("hoca_img").value }
+        };
+
+        set(ref(db, 'haftanin_enleri/' + week), data).then(() => {
+            alert(week + ". Hafta Güncellendi!");
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premier League | Haber Detayı</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --pl-purple: #3d195b;
+            --pl-green: #00ff87;
+            --bg-gray: #f2f2f2;
+        }
+
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-gray); margin: 0; }
+        
+        /* Header Alanı */
+        .top-nav { 
+            background: var(--pl-purple); 
+            height: 70px; 
+            width: 100%; 
+            display: flex; 
+            align-items: center;
+            border-bottom: 5px solid var(--pl-green);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo-link {
+            text-decoration: none;
+            margin-left: 30px;
+        }
+
+        .pl-logo-text {
+            color: white;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+        }
+
+        .pl-logo-text span { color: var(--pl-green); }
+
+        /* Ana İçerik Konteynırı */
+        .main-container { 
+            max-width: 900px; 
+            margin: 40px auto; 
+            background: white; 
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .cover-img { 
+            width: 100%; 
+            height: 450px; 
+            object-fit: cover; 
+            display: block;
+        }
+
+        .article-content { padding: 40px; }
+
+        .back-link { 
+            display: inline-flex; 
+            align-items: center;
+            margin-bottom: 25px; 
+            text-decoration: none; 
+            color: var(--pl-purple); 
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+        .back-link:hover { color: #5a2a85; }
+
+        h1 { 
+            color: var(--pl-purple); 
+            font-size: 36px; 
+            font-weight: 800; 
+            line-height: 1.1;
+            margin: 0 0 25px 0;
+        }
+
+        .short-info-box { 
+            background: #f9f0ff; 
+            border-left: 6px solid var(--pl-purple); 
+            padding: 20px; 
+            font-style: italic; 
+            margin: 30px 0; 
+            font-size: 1.2rem; 
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .main-article-img { 
+            width: 100%; 
+            margin: 20px 0 40px 0; 
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .text-body { 
+            line-height: 1.8; 
+            color: #222; 
+            font-size: 1.15rem; 
+            white-space: pre-line;
+            font-weight: 400;
+        }
+
+        /* Yükleniyor Ekranı */
+        .loading { padding: 100px; text-align: center; color: var(--pl-purple); font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<div class="top-nav">
+    <a href="index.html" class="logo-link">
+        <div class="pl-logo-text">Premier<span>League</span></div>
+    </a>
+</div>
+
+<div class="main-container" id="news-detail">
+    <div class="loading">Haber detayları yükleniyor...</div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBeDf5CxbElVbkl8wGXSAZ9DBxOWxOorxc",
+        authDomain: "premierligrp.firebaseapp.com",
+        databaseURL: "https://premierligrp-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "premierligrp",
+        storageBucket: "premierligrp.firebasestorage.app",
+        messagingSenderId: "762350145530",
+        appId: "1:762350145530:web:657b94791a29bc0ddd1e43"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+
+    if (id) {
+        const newsRef = ref(db, `haberler/${id}`);
+        get(newsRef).then((snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                document.getElementById("news-detail").innerHTML = `
+                    <img src="${data.coverImg}" class="cover-img">
+                    <div class="article-content">
+                        <a href="javascript:history.back()" class="back-link">← Geri Dön</a>
+                        <h1>${data.title}</h1>
+                        <div class="short-info-box">${data.shortInfo}</div>
+                        <img src="${data.mainImg}" class="main-article-img">
+                        <div class="text-body">${data.content}</div>
+                    </div>
+                `;
+                // Sayfa başlığını haber başlığıyla değiştir
+                document.title = data.title + " | Premier League";
+            } else {
+                document.getElementById("news-detail").innerHTML = "<div class='loading'>Haber bulunamadı.</div>";
+            }
+        }).catch(err => {
+            console.error(err);
+            document.getElementById("news-detail").innerHTML = "<div class='loading'>Veri çekilirken bir hata oluştu.</div>";
+        });
+    } else {
+        document.getElementById("news-detail").innerHTML = "<div class='loading'>Geçersiz Haber ID.</div>";
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>⚽ Haftalık Skor Girişi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary-color: #3d195b; --button-color: #00ff85; }
+        body { font-family: 'Inter', sans-serif; background-color: #e9ecef; display: flex; justify-content: center; padding: 20px; }
+        .form-container { max-width: 800px; width: 100%; background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .match-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding: 10px; border-bottom: 1px solid #eee; }
+        select, input { padding: 8px; border-radius: 6px; border: 1px solid #ccc; }
+        button { width: 100%; padding: 15px; background: var(--button-color); color: var(--primary-color); border: none; font-weight: 800; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2 style="color: var(--primary-color); margin-bottom: 20px;">Haftalık Skor Girişi</h2>
+        <div id="matchesContainer"></div>
+        <button onclick="saveWeek()">Buluta Kaydet</button>
+        <a href="index.html" style="display:block; text-align:center; margin-top:15px; color:var(--primary-color); text-decoration:none; font-weight:600;">Geri Dön</a>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeDf5CxbElVbkl8wGXSAZ9DBxOWxOorxc",
+            authDomain: "premierligrp.firebaseapp.com",
+            databaseURL: "https://premierligrp-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "premierligrp",
+            storageBucket: "premierligrp.firebasestorage.app",
+            messagingSenderId: "762350145530",
+            appId: "1:762350145530:web:657b94791a29bc0ddd1e43"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const teams = ["Arsenal", "Manchester City", "Liverpool", "Tottenham Hotspur", "Manchester United", "Chelsea", "Newcastle United", "Aston Villa", "Brighton", "West Ham United", "Nottingham Forest", "Everton"];
+
+        function createFields() {
+            const container = document.getElementById('matchesContainer');
+            for(let i=1; i<=6; i++) {
+                container.innerHTML += `
+                <div class="match-row">
+                    <select id="h${i}">${teams.map(t=>`<option>${t}</option>`)}</select>
+                    <input type="number" id="hs${i}" value="0" style="width:50px">
+                    <span>-</span>
+                    <input type="number" id="as${i}" value="0" style="width:50px">
+                    <select id="a${i}">${teams.map(t=>`<option>${t}</option>`)}</select>
+                </div>`;
+            }
+        }
+
+        async function saveWeek() {
+            const snapshot = await db.ref('standings').once('value');
+            let standings = snapshot.val();
+            let lastMatches = [];
+
+            for(let i=1; i<=6; i++) {
+                const hName = document.getElementById(`h${i}`).value;
+                const aName = document.getElementById(`a${i}`).value;
+                const hs = parseInt(document.getElementById(`hs${i}`).value);
+                const as = parseInt(document.getElementById(`as${i}`).value);
+
+                const hTeam = standings.find(t => t.name === hName);
+                const aTeam = standings.find(t => t.name === aName);
+
+                hTeam.O++; aTeam.O++;
+                hTeam.AG += hs; hTeam.YG += as; hTeam.AV = hTeam.AG - hTeam.YG;
+                aTeam.AG += as; aTeam.YG += hs; aTeam.AV = aTeam.AG - aTeam.YG;
+
+                if(hs > as) { hTeam.G++; hTeam.Puan += 3; aTeam.M++; }
+                else if(as > hs) { aTeam.G++; aTeam.Puan += 3; hTeam.M++; }
+                else { hTeam.B++; aTeam.B++; hTeam.Puan++; aTeam.Puan++; }
+                
+                lastMatches.push({home: hName, away: aName, score: `${hs}-${as}`});
+            }
+
+            await db.ref('standings').set(standings);
+            await db.ref('lastMatches').set(lastMatches);
+            alert("Kaydedildi!");
+            window.location.href = "puan_durumu.html";
+        }
+        createFields();
+    </script>
+</body>
+</html>
